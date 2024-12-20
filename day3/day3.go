@@ -1,7 +1,8 @@
 package day3
 
 import (
-	"aoc/util"
+	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -16,36 +17,49 @@ func Solve(lines []string) int {
 
 func solveLine(line string) int {
 	prefix := "mul("
-	mem := []rune{}
 
 	total := 0
-	for i := 0; i < len(line); i++ {
-		ch := rune(line[i])
 
-		mem = append(mem, ch)
-		if prefix == string(mem) {
-			i, first := getNumber(line, i+1, ',')
-			i, second := getNumber(line, i+1, ')')
+	for strings.Contains(line, prefix) {
+		startAt := strings.Index(line, prefix) + len(prefix)
+		endAt := endAt(line, startAt)
+		if endAt == -1 {
+			fmt.Println("endAt == -1")
+			break
+		}
+		nums := strings.Split(line[startAt:endAt], ",")
 
-			total += first * second
-			mem = []rune{}
-		} else if !strings.HasPrefix(prefix, string(mem)) {
-			mem = []rune{}
+		if len(nums) < 2 {
+			fmt.Println("len(nums) < 2")
+			break
 		}
 
+		x, err := strconv.Atoi(nums[0])
+		if err != nil {
+			line = line[startAt:]
+			fmt.Println("x produces:", err)
+			continue
+		}
+
+		y, err := strconv.Atoi(nums[1])
+		if err != nil {
+			line = line[startAt:]
+			fmt.Println("y produces:", err)
+			continue
+		}
+
+		total += x * y
+		line = line[endAt+1:]
 	}
 
 	return total
 }
 
-func getNumber(line string, start int, end rune) (index, number int) {
-	var str []rune
-	for ch := rune(line[start]); ch != end; ch = rune(line[start]) {
-		if start == len(line)-1 {
-			break
+func endAt(line string, startAt int) int {
+	for i := startAt; i < len(line); i++ {
+		if line[i] == ')' {
+			return i
 		}
-		str = append(str, ch)
-		start++
 	}
-	return start, util.ParseInt(string(str))
+	return -1
 }
